@@ -1,6 +1,8 @@
-# stackshift
+# claude-code-optimizer
 
-**Claude Code optimizer.** A skill that audits your Claude Code setup, finds new plugins / skills / MCP servers worth adding, asks before changing anything, installs what you approve, and prints a dated PDF report to your Desktop.
+> Codename: **stackshift**
+
+A skill that audits your Claude Code setup, finds new plugins / skills / MCP servers worth adding, asks before changing anything, installs what you approve, and prints a dated PDF report to your Desktop.
 
 Run it once a month. Keep your AI dev stack sharp.
 
@@ -24,7 +26,7 @@ Drop the skill into your Claude Code skills directory:
 ```bash
 mkdir -p ~/.claude/skills/claude-code-optimizer
 curl -o ~/.claude/skills/claude-code-optimizer/SKILL.md \
-  https://raw.githubusercontent.com/ronchestermusic/stackshift/main/SKILL.md
+  https://raw.githubusercontent.com/ronchestermusic/claude-code-optimizer/main/SKILL.md
 ```
 
 Then in any Claude Code session:
