@@ -12,7 +12,7 @@
 
 # claude-code-optimizer
 
-> **Codename:** stackshift &middot; **Version:** 0.1 &middot; **Author:** [Ron Chester](https://github.com/ronchestermusic) &middot; Toronto
+> **Codename:** stackshift &middot; **Version:** 0.1 &middot; **Author:** [Ron Chester](https://github.com/ronchestermusic) — artist · studio owner · building tools for the music business · Toronto
 
 A Claude Code skill that audits your AI dev stack, hunts down new plugins / skills / MCP servers worth installing, asks before changing anything, installs what you approve, and prints a dated PDF report to your Desktop.
 
@@ -82,7 +82,9 @@ Saved as `claude-code-update-YYYY-MM-DD.pdf` on your Desktop.
 
 ## 💭 &nbsp; Why I built it
 
-I'm a studio owner in Toronto who spends too much time in Claude Code. New plugins ship weekly. New MCP servers ship weekly. Nobody has time to track all of it.
+I'm an artist and studio owner in Toronto building tools for the music business. Claude Code is the spine of how I work — sketching releases, automating studio admin, prototyping ideas for other artists.
+
+But new plugins ship weekly. New MCP servers ship weekly. Tracking all of it is a part-time job nobody asked for.
 
 So I built a skill that does the tracking for me, on a schedule I control, with **receipts** (the PDF) so I remember what I added and why.
 
@@ -94,4 +96,4 @@ MIT. Use it, fork it, ship your own version.
 
 ---
 
-<sub>Built by **[Ron Chester](https://github.com/ronchestermusic)** &middot; If this saved you an afternoon, ⭐ the repo.</sub>
+<sub>Built by **[Ron Chester](https://github.com/ronchestermusic)** &middot; artist + studio owner shipping music-industry tools &middot; Toronto &middot; If this saved you an afternoon, ⭐ the repo.</sub>
