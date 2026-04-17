@@ -27,7 +27,8 @@
       --ink: #e6edf3;
       --ink-dim: #8b96a3;
       --ink-faint: #545d68;
-      --accent: #a3c5ff;
+      --accent: #4F8FFF;
+      --accent-soft: #7AA2F7;
       --accent-warm: #ffb070;
       --green: #7ee787;
       --pink: #ff7eb6;
@@ -49,7 +50,7 @@
 
     body {
       background:
-        radial-gradient(ellipse at 20% 0%, rgba(163,197,255,0.06), transparent 60%),
+        radial-gradient(ellipse at 20% 0%, rgba(79,143,255,0.10), transparent 60%),
         radial-gradient(ellipse at 80% 100%, rgba(255,176,112,0.04), transparent 60%),
         var(--bg);
     }
@@ -108,10 +109,30 @@
     .ascii {
       font-size: 13px;
       line-height: 1.15;
-      color: var(--accent);
+      color: var(--accent-soft);
       white-space: pre;
       margin: 24px 0 18px;
       letter-spacing: 0;
+    }
+    .brand-mark {
+      font-family: 'JetBrains Mono', monospace;
+      font-weight: 700;
+      font-size: 56px;
+      letter-spacing: -1px;
+      line-height: 1;
+      color: var(--ink);
+      margin: 28px 0 14px;
+    }
+    .brand-mark .accent { color: var(--accent); }
+    .brand-rule {
+      width: 96px;
+      height: 4px;
+      border-radius: 2px;
+      background: linear-gradient(90deg, var(--accent), var(--accent-soft));
+      margin-bottom: 20px;
+    }
+    @media (max-width: 640px) {
+      .brand-mark { font-size: 36px; }
     }
 
     .product {
@@ -284,7 +305,7 @@
     }
     .btn:hover { transform: translateY(-1px); }
     .btn--primary { background: var(--accent); color: #0a0c0f; }
-    .btn--primary:hover { background: #b8d2ff; }
+    .btn--primary:hover { background: var(--accent-soft); }
     .btn--ghost {
       background: transparent;
       color: var(--ink);
@@ -335,17 +356,8 @@
           <span class="squiggle">~</span> <span class="dollar">$</span> <span class="cmd">claude /claude-code-optimizer</span>
         </div>
 
-<pre class="ascii">
-   ▄████▄   ▄████▄   ▄▄▄▄    ▄▄▄
-  ▒██▀ ▀█  ▒██▀ ▀█  ▓█████▄ ▒████▄
-  ▒▓█    ▄ ▒▓█    ▄ ▒██▒ ▄██▒██  ▀█▄
-  ▒▓▓▄ ▄██▒▒▓▓▄ ▄██▒▒██░█▀  ░██▄▄▄▄██
-  ▒ ▓███▀ ░▒ ▓███▀ ░░▓█  ▀█▓ ▓█   ▓██▒
-  ░ ░▒ ▒  ░░ ░▒ ▒  ░░▒▓███▀▒ ▒▒   ▓▒█░
-    ░  ▒     ░  ▒   ▒░▒   ░   ▒   ▒▒ ░
-  ░        ░         ░    ░   ░   ▒
-  ░ ░      ░ ░       ░            ░  ░
-</pre>
+        <div class="brand-mark">claude-code-<span class="accent">optimizer</span></div>
+        <div class="brand-rule"></div>
 
         <div class="product">
           <span class="product__name">claude-code-optimizer</span>
