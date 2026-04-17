@@ -1,10 +1,16 @@
-<p align="center">
-  <img src="docs/banner.svg" alt="claude-code-optimizer · keep your AI dev stack sharp" width="100%">
-</p>
+```
+ ██████╗ ██████╗ ██████╗
+██╔════╝██╔════╝██╔═══██╗
+██║     ██║     ██║   ██║
+██║     ██║     ██║   ██║
+╚██████╗╚██████╗╚██████╔╝
+ ╚═════╝ ╚═════╝ ╚═════╝
+   claude — code — optimizer
+```
 
 # claude-code-optimizer
 
-> **Codename:** stackshift &middot; **Version:** 0.1 &middot; **Author:** [Ron Chester](https://github.com/ronchestermusic) — artist · studio owner · building tools for the music business · Toronto
+> **Codename:** stackshift &middot; **Version:** 0.1 &middot; MIT &middot; [github](https://github.com/ronchestermusic/claude-code-optimizer)
 
 A Claude Code skill that audits your AI dev stack, hunts down new plugins / skills / MCP servers worth installing, asks before changing anything, installs what you approve, and prints a dated PDF report to your Desktop.
 
@@ -88,4 +94,4 @@ MIT. Use it, fork it, ship your own version.
 
 ---
 
-<sub>Built by **[Ron Chester](https://github.com/ronchestermusic)** &middot; artist + studio owner shipping music-industry tools &middot; Toronto &middot; If this saved you an afternoon, ⭐ the repo.</sub>
+<sub>MIT · If this saved you an afternoon, ⭐ the repo.</sub>

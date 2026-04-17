@@ -114,25 +114,16 @@
       margin: 24px 0 18px;
       letter-spacing: 0;
     }
-    .brand-mark {
-      font-family: 'JetBrains Mono', monospace;
+    .ascii {
+      color: var(--accent);
+      font-size: 14px;
+      line-height: 1.1;
       font-weight: 700;
-      font-size: 56px;
-      letter-spacing: -1px;
-      line-height: 1;
-      color: var(--ink);
-      margin: 28px 0 14px;
+      letter-spacing: 0;
     }
-    .brand-mark .accent { color: var(--accent); }
-    .brand-rule {
-      width: 96px;
-      height: 4px;
-      border-radius: 2px;
-      background: linear-gradient(90deg, var(--accent), var(--accent-soft));
-      margin-bottom: 20px;
-    }
-    @media (max-width: 640px) {
-      .brand-mark { font-size: 36px; }
+    .ascii .sub {
+      color: var(--ink-dim);
+      font-weight: 400;
     }
 
     .product {
@@ -356,8 +347,15 @@
           <span class="squiggle">~</span> <span class="dollar">$</span> <span class="cmd">claude /claude-code-optimizer</span>
         </div>
 
-        <div class="brand-mark">claude-code-<span class="accent">optimizer</span></div>
-        <div class="brand-rule"></div>
+<pre class="ascii">
+ ██████╗ ██████╗ ██████╗
+██╔════╝██╔════╝██╔═══██╗
+██║     ██║     ██║   ██║
+██║     ██║     ██║   ██║
+╚██████╗╚██████╗╚██████╔╝
+ ╚═════╝ ╚═════╝ ╚═════╝
+   claude — code — optimizer
+</pre>
 
         <div class="product">
           <span class="product__name">claude-code-optimizer</span>
@@ -475,7 +473,7 @@
     </section>
 
     <footer>
-      <div>Built by <a href="https://github.com/ronchestermusic">Ron Chester</a> · artist + studio owner · music-business tools · Toronto · MIT</div>
+      <div>MIT · v0.1 · codename stackshift</div>
       <div><a href="https://github.com/ronchestermusic/claude-code-optimizer">github.com/ronchestermusic/claude-code-optimizer</a></div>
     </footer>
 
