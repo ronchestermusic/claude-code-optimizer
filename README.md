@@ -166,4 +166,10 @@ MIT. Use it, fork it, ship your own version.
 
 ---
 
-<sub>MIT · If this saved you an afternoon, ⭐ the repo.</sub>
+## ⚖️ &nbsp; Legal
+
+Stackshift is an independent open source project. Not affiliated with, endorsed by, or sponsored by Anthropic. "Claude" and "Claude Code" are trademarks of Anthropic PBC, used here descriptively to identify the platform this skill runs on.
+
+---
+
+<sub>MIT · Independent project · If this saved you an afternoon, ⭐ the repo.</sub>

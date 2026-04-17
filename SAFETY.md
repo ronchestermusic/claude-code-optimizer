@@ -4,6 +4,8 @@ Stackshift is a Claude Code skill that reads READMEs and tool metadata off the p
 
 If you find a way to abuse this skill — an injection pattern that slips past the scan, a trust heuristic that can be gamed, an install path that shouldn't be allowed — open a GitHub issue or contact the maintainer directly.
 
+> **Legal:** Stackshift is an independent open source project. Not affiliated with, endorsed by, or sponsored by Anthropic. "Claude" and "Claude Code" are trademarks of Anthropic PBC, used here descriptively to identify the platform this skill runs on.
+
 ---
 
 ## Threats & Defenses
