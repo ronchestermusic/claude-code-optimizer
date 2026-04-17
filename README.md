@@ -122,6 +122,21 @@ Saved as `claude-code-update-YYYY-MM-DD.pdf` on your Desktop. Language adapted t
 
 ---
 
+## 🛡 &nbsp; Security
+
+Stackshift reads untrusted READMEs off the internet and runs install commands on your machine. That's a real attack surface, so the skill is designed to defend against it:
+
+- **Data is not instructions.** All fetched content is treated as data — Claude never follows directives buried in a scraped README.
+- **Trust-tiered candidates.** Every recommended tool gets a trust score based on publisher reputation, repo age, adoption, and install shape. Low-trust tools default to `REVIEW` and require an explicit override.
+- **Injection-phrase scan.** READMEs and `SKILL.md` files are scanned for known prompt-injection patterns, obfuscation, and hidden directives before anything is recommended.
+- **Two confirmations before install.** You pick by number, then see a pre-install preview (exact command, source, trust tier, flags) and must reply `go` a second time.
+- **No pipe-to-shell.** `curl | bash`, `eval`, and obfuscated install scripts are refused outright.
+- **Post-install diff + re-scan.** You see what actually landed, and a final injection scan runs on the installed artifact.
+
+Full threat model: [`SAFETY.md`](./SAFETY.md).
+
+---
+
 ## 🗺 &nbsp; Roadmap — Cross-tool compatibility
 
 Today Stackshift runs inside Claude Code because that's where skills live. But most MCP servers already work in **Cursor, Windsurf, Zed, and any MCP-compatible terminal**. Planned:
