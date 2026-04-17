@@ -1,125 +1,235 @@
 ---
 name: claude-code-optimizer
-description: Research new Claude Code plugins, skills, and MCP servers. Compare against what's installed. Ask user what to install or replace. Install approved tools. Generate a dated PDF summary. Use when user wants to optimize their Claude Code setup or do a periodic maintenance check.
+description: Stackshift — Claude Code Optimizer. Profiles how you actually use Claude Code, audits your installed plugins/skills/MCP servers/marketplaces (flagging broken ones), researches new tools across GitHub, X, Reddit, Hacker News, and official Anthropic channels in parallel, and generates a personalized dated PDF guide whose language and depth match your tech level. Use when the user wants to optimize their Claude Code setup, do a periodic maintenance check, or figure out which new tools fit their workflow.
 ---
 
-# Claude Code Optimizer
+# Stackshift — Claude Code Optimizer
 
-You are running a periodic Claude Code optimization check. Your job is to research what's new, compare it against what's installed, ask before changing anything, install what's approved, and generate a PDF summary at the end.
+A personalized, periodic optimization pass for Claude Code. Seven steps:
 
-## Step 1 — Audit Current Setup
+0. Profile the user
+1. Audit current setup (deep)
+2. Research what's new (parallel, multi-source)
+3. Filter, diff, and compare
+4. Ask by number
+5. Install approved tools
+6. Generate the personalized PDF guide
 
-Run these commands and record the results:
+Never change anything without explicit numbered confirmation. Always adapt language to the user's tech level.
+
+---
+
+## Step 0 — Profile the User
+
+Before touching anything, build a short profile. If CLAUDE.md or prior memory already answers these, skip the question — otherwise ask them all in **one** message, conversationally:
+
+- **What do you mainly use Claude Code for?** (coding / writing / running a business / research / creative work / learning / other)
+- **Tech level?** (brand new / know some basics / comfortable dev / power user) — controls PDF language
+- **Anything specific you want from this session?** (e.g. "just show me what's new", "faster PDFs", "cut my prompting in half", "automate my posting")
+- **PDF style preference?** (warm cream editorial — default / plain minimal / colorful / don't care)
+
+Save the answers as a working profile block. Everything downstream uses it: research is filtered by use case, recommendations are ranked by fit, PDF language + depth match the tech level, PDF visuals match the style preference.
+
+**Also check for prior runs:** if a `~/Desktop/claude-code-update-*.pdf` exists, note the most recent date. Step 3 uses it to only surface what's new since then.
+
+---
+
+## Step 1 — Audit Current Setup (Deep)
+
+Run these in parallel and capture everything. Don't only look at plugins — a real optimizer audits the whole surface.
 
 ```bash
-cat ~/.claude/settings.json | grep -A 50 "enabledPlugins"
+# Plugins + hooks + permissions
+cat ~/.claude/settings.json
+
+# Active plugin marketplaces
+claude plugin marketplace list
+
+# MCP servers (flag any that error)
 claude mcp list
+
+# Installed skills (user-level)
+ls -la ~/.claude/skills/ 2>/dev/null
+
+# Installed skills (project-level, if inside a repo)
+ls -la ./.claude/skills/ 2>/dev/null
+
+# Claude Code version
+claude --version
 ```
 
-Also note the current date for the PDF filename.
+**Broken-tool detection:**
+- MCP servers that error out → candidate for **FIX** or **REMOVE**
+- Skill folders without a valid `SKILL.md` or with broken frontmatter → candidate for **FIX** or **REMOVE**
+- Marketplaces that 404 → candidate for **REMOVE**
 
-## Step 2 — Research What's New
+Print a one-line snapshot: *"You have N plugins, M skills, K MCP servers across L marketplaces. Claude Code version X.Y.Z."*
 
-Search for recent additions and updates across these sources:
+---
 
-1. **Official marketplace** — `github.com/anthropics/claude-plugins-official` (check the plugins/ directory for anything not in the user's current list)
-2. **Community skills** — `github.com/travisvn/awesome-claude-skills` and `github.com/hesreallyhim/awesome-claude-code`
-3. **MCP servers** — search for "claude code MCP server [current year]" and check `pulsemcp.com`
-4. **Top community repos** — search "claude code plugins skills [current year] github"
+## Step 2 — Research What's New (Parallel, Multi-Source)
 
-For each result, evaluate:
-- Does it overlap with something already installed?
-- Is it actively maintained (recent commits)?
-- Is it genuinely useful for a developer/studio workflow?
+Fire these in parallel. Cast a wide net — filter hard in Step 3. Prefer `WebFetch` and `WebSearch` over a single source.
 
-## Step 3 — Build the Comparison
+**GitHub:**
+- `github.com/anthropics/claude-plugins-official` → `plugins/` directory for new entries
+- `github.com/travisvn/awesome-claude-skills`
+- `github.com/hesreallyhim/awesome-claude-code`
+- GitHub search queries: `claude code plugin`, `claude code skill`, `claude mcp server` — sort by recently updated + stars
 
-Present findings as a clean table:
+**MCP directories:**
+- `pulsemcp.com`
+- `mcp.so`
 
-| Tool | Type | What it does | Recommendation | Reason |
-|------|------|-------------|----------------|--------|
-| name | plugin/mcp/skill | one line | INSTALL / REPLACE [X] / SKIP | why |
+**Social / community (this is where most shipping gets announced first):**
+- **X (Twitter)** — `WebSearch` for `"claude code" (plugin OR skill OR mcp)` and recent posts tagging `@AnthropicAI`
+- **Reddit** — `site:reddit.com/r/ClaudeAI claude code`, `site:reddit.com/r/Anthropic`
+- **Hacker News** — `hn.algolia.com "claude code"` filtered to last 30 days
 
-- **INSTALL** — new tool the user doesn't have, worth adding
-- **REPLACE [existing-tool]** — a newer/better alternative to something already installed
-- **SKIP** — looked at it, not worth adding right now (explain why)
+**Official Anthropic:**
+- `docs.claude.com/en/docs/claude-code` — feature/changelog pages
+- `github.com/anthropics/claude-code/releases` — version notes
+- `anthropic.com/news` — ecosystem announcements
 
-## Step 4 — Ask Before Doing Anything
+For each candidate capture: name, type (plugin / skill / MCP), one-line purpose, install URL or command, last updated date, adoption signal (stars / mentions / comments), and **whether it's Claude-Code-exclusive or cross-tool** (some MCP servers work in Cursor, Windsurf, Zed, and custom terminals too — relevant for Step 3 ranking if the user cares).
 
-Present the table and ask:
+---
 
-> "Here's what I found. Which ones do you want me to install? You can say 'install all', name specific ones, or say 'skip' for any. I won't touch anything until you confirm."
+## Step 3 — Filter, Diff, and Build the Comparison
 
-Wait for explicit confirmation. Do not install anything before the user responds.
+**Filter by the profile from Step 0.** A non-technical writer does not need a Kubernetes MCP. A Rails dev may not need a writing assistant skill. Drop obvious mismatches, rank the rest by fit.
+
+**Diff against the last run.** If a previous PDF exists, only surface tools that are genuinely new or meaningfully updated since that date. Don't re-pitch what the user already saw.
+
+**Present as a numbered table:**
+
+| # | Tool | Type | What it does (plain English, matched to tech level) | Recommendation | Reason |
+|---|------|------|-----------------------------------------------------|----------------|--------|
+| 1 | name | plugin / skill / mcp | one line | **INSTALL** / **REPLACE [X]** / **FIX** / **REMOVE** / **SKIP** | why |
+
+Recommendations:
+- **INSTALL** — new, fits this user
+- **REPLACE [existing]** — meaningfully better than something they have
+- **FIX** — currently broken, worth repairing
+- **REMOVE** — broken and not worth fixing, or clearly unused
+- **SKIP** — reviewed, not a fit (one-line reason)
+
+Close with a one-line summary: *"Found N candidates, M broken, K already installed and healthy."*
+
+---
+
+## Step 4 — Ask by Number
+
+Show the table, then ask:
+
+> "Which ones? Reply with numbers (`1, 3, 5`), `all install`, `all fixes`, or `skip` to do nothing. I won't touch anything until you confirm."
+
+Wait for an explicit answer. Never install before confirmation.
+
+---
 
 ## Step 5 — Install Approved Tools
 
-For each approved item:
+Handle each type:
 
-**Plugins** (from official marketplace):
+**Plugins — official marketplace:**
 ```bash
-claude plugin install [name]@claude-plugins-official
+claude plugin install <name>@claude-plugins-official
 ```
 
-**Plugins** (from other marketplace):
+**Plugins — third-party marketplace:**
 ```bash
-claude plugin marketplace add [github-url]
-claude plugin install [name]@[marketplace]
+claude plugin marketplace add <github-url>
+claude plugin install <name>@<marketplace>
 ```
 
-**MCP servers**:
+**MCP servers (stdio):**
 ```bash
-claude mcp add --transport stdio [name] -- npx -y [package-name]
+claude mcp add --transport stdio <name> -- npx -y <package-name>
 ```
 
-After all installs:
+**Skills (git-based):**
 ```bash
-# remind user to run this in Claude Code
-echo "Run /reload-plugins to activate new plugins"
+git clone <repo-url> ~/.claude/skills/<skill-name>
+# then verify ~/.claude/skills/<skill-name>/SKILL.md has valid frontmatter
 ```
 
-## Step 6 — Generate the PDF
+**Skills inside a skill-marketplace plugin:** document how the user invokes them via the hosting plugin (no separate install needed).
 
-Build a dated HTML file and print it to PDF using Chrome headless.
+After any plugin or MCP install, tell the user to run `/reload-plugins` or restart Claude Code.
 
-The PDF should:
-- Use the warm cream editorial style (Playfair Display headers, Source Serif 4 body, IBM Plex Mono for code)
-- Have a cover with the date and what changed
-- Include a section for each newly installed tool explaining what it does in plain language and how to use it
-- Include a "what to do next" section with anything that was SKIPped and why
-- Include the updated full quick-reference table with all tools (old + new)
-- Have a tips bar at the bottom of each page
+If any install fails, capture the error and surface it in the PDF under "Anything broken" rather than silently continuing.
 
-Save to Desktop as: `claude-code-update-[YYYY-MM-DD].pdf`
+---
 
-### PDF generation pattern:
+## Step 6 — Generate the Personalized PDF Guide
+
+The PDF is both a change report **and** a usage guide — something the user can open next month and still learn from.
+
+**Language rule (non-negotiable):** write the whole document in language matched to the tech level from Step 0.
+- *power user* — "MCP server over stdio transport, registered with `claude mcp add`"
+- *comfortable dev* — "MCP server — a little program Claude can call for extra tools"
+- *basics* — "a helper that plugs extra abilities into Claude. Here's what it does for you…"
+- *brand new* — no jargon at all. Describe outcomes, not mechanisms.
+
+**Section order:**
+1. **Cover** — date, one-line profile summary, headline of what changed this run
+2. **What's new in your setup** — for each installed tool: plain-language description, concrete example prompts, what to expect
+3. **How to use each tool** — 2–4 usage examples per tool, matched to the user's stated use case
+4. **Your full toolkit** — updated quick-reference table of ALL tools (old + new), grouped by type
+5. **What we skipped and why** — one short paragraph per skipped tool
+6. **Anything broken** — FIX / REMOVE items with repair steps
+7. **Next check-in** — suggested interval (2 weeks if the ecosystem was active, 4–6 weeks if quiet)
+
+**Styling preset from Step 0:**
+- *Warm cream editorial* (default) — `#faf7f1` bg, `#c47b2b` amber accent, Playfair Display + Source Serif 4 + IBM Plex Mono
+- *Plain minimal* — white bg, black text, system sans, no accent fonts, generous whitespace
+- *Colorful* — saturated accent palette (blue `#4F8FFF`, warm orange `#ffb070`), keep serif headers
+- *Don't care* — default to warm cream
+
+**Shared CSS rules:**
+- Google Fonts via CDN (Chrome headless loads them fine)
+- `page-break-inside: avoid` on every card
+- `-webkit-print-color-adjust: exact` on `body`
+- Page width: 210mm, padding: `52px 56px 128px` (room for a tips bar)
+
+**Save to:** `~/Desktop/claude-code-update-[YYYY-MM-DD].pdf`
+
+**Generation pattern:**
 
 ```bash
-# Write the HTML to Desktop
-cat > /Users/[username]/Desktop/claude-code-update-[date].html << 'HTML'
-[full HTML with inline styles, Google Fonts via CDN, print CSS]
+cat > ~/Desktop/claude-code-update-<date>.html << 'HTML'
+<!-- full HTML with inline styles, Google Fonts CDN, print CSS -->
 HTML
 
-# Print to PDF
 /Applications/Google\ Chrome.app/Contents/MacOS/Google\ Chrome \
   --headless --disable-gpu \
-  --print-to-pdf=/Users/[username]/Desktop/claude-code-update-[date].pdf \
+  --print-to-pdf=$HOME/Desktop/claude-code-update-<date>.pdf \
   --print-to-pdf-no-header \
-  /Users/[username]/Desktop/claude-code-update-[date].html
+  $HOME/Desktop/claude-code-update-<date>.html
 ```
 
-**PDF design rules:**
-- Background: #faf7f1 (warm cream)
-- Accent: #c47b2b (amber)
-- Fonts via Google Fonts CDN (loads fine in Chrome headless)
-- `page-break-inside: avoid` on all cards
-- `-webkit-print-color-adjust: exact` on body
-- Page width: 210mm, padding: 52px 56px 128px (leaves room for tips bar)
+---
 
-## Important Rules
+## Hard Rules
 
-- **Never install anything without explicit user confirmation**
-- **Never remove or disable existing tools** — only suggest replacements, user decides
-- **Skip tools that clearly overlap** with existing setup unless they're significantly better
-- **Always explain in plain English** — no jargon, no assuming technical knowledge
-- **Date the PDF** — so the user has a versioned history of their setup over time
+- **Never install without explicit numbered confirmation.**
+- **Never remove or disable anything without permission** — FIX / REMOVE items are still suggestions.
+- **Tech level controls language everywhere** — table descriptions, PDF body, error messages, question wording.
+- **Filter by profile.** A non-dev using Claude Code for writing shouldn't get Docker MCP recommendations.
+- **Diff against the last PDF.** Don't re-pitch tools the user already saw.
+- **Date every PDF.** The user keeps a versioned history of their setup.
+
+---
+
+## Scope & Roadmap
+
+**Current scope:** Claude Code only. Skills only run inside Claude Code today, and install commands (`claude plugin install`, `claude mcp add`) are Claude-Code-specific.
+
+**Cross-tool direction (planned):** many MCP servers already work across Cursor, Windsurf, Zed, and custom AI terminals. A future version will:
+- Detect which AI coding tools the user has installed
+- Flag recommendations as "works in: Claude Code / Cursor / Windsurf / any MCP client"
+- Emit equivalent install instructions for each tool's config file (e.g., Cursor's `mcp.json`)
+- Generate a portable PDF that shows the user's stack across all their AI tools, not just Claude Code
+
+Until then, note cross-tool compatibility in Step 2 research output so the user knows which tools they could carry over if they switch or use multiple assistants.
