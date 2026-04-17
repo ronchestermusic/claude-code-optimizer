@@ -1,0 +1,471 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>claude-code-optimizer · keep your AI dev stack sharp</title>
+  <meta name="description" content="A Claude Code skill that audits your stack, finds new plugins/skills/MCP servers, and prints a dated PDF report. Run it once a month." />
+
+  <meta property="og:title" content="claude-code-optimizer" />
+  <meta property="og:description" content="A Claude Code skill that audits your AI dev stack and prints a dated PDF report. Run it once a month." />
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content="https://ronchestermusic.github.io/claude-code-optimizer/" />
+
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="claude-code-optimizer" />
+  <meta name="twitter:description" content="A Claude Code skill that audits your AI dev stack and prints a dated PDF report." />
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Instrument+Serif&display=swap" rel="stylesheet" />
+
+  <style>
+    :root {
+      --bg: #0b0d10;
+      --panel: #14181d;
+      --panel-edge: #1f252c;
+      --ink: #e6edf3;
+      --ink-dim: #8b96a3;
+      --ink-faint: #545d68;
+      --accent: #a3c5ff;
+      --accent-warm: #ffb070;
+      --green: #7ee787;
+      --pink: #ff7eb6;
+      --yellow: #f2cc60;
+      --line: rgba(255,255,255,0.06);
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    html, body {
+      background: var(--bg);
+      color: var(--ink);
+      font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
+      font-size: 15px;
+      line-height: 1.65;
+      -webkit-font-smoothing: antialiased;
+      min-height: 100vh;
+    }
+
+    body {
+      background:
+        radial-gradient(ellipse at 20% 0%, rgba(163,197,255,0.06), transparent 60%),
+        radial-gradient(ellipse at 80% 100%, rgba(255,176,112,0.04), transparent 60%),
+        var(--bg);
+    }
+
+    .container {
+      max-width: 880px;
+      margin: 0 auto;
+      padding: 80px 24px 120px;
+    }
+
+    /* terminal window */
+    .terminal {
+      background: var(--panel);
+      border: 1px solid var(--panel-edge);
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow:
+        0 1px 0 rgba(255,255,255,0.04) inset,
+        0 24px 60px -20px rgba(0,0,0,0.6);
+    }
+
+    .terminal__chrome {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 14px 18px;
+      background: linear-gradient(180deg, #1a1f25, #14181d);
+      border-bottom: 1px solid var(--line);
+      position: relative;
+    }
+    .dot { width: 12px; height: 12px; border-radius: 50%; }
+    .dot.red { background: #ff5f57; }
+    .dot.yellow { background: #febc2e; }
+    .dot.green { background: #28c840; }
+    .terminal__title {
+      position: absolute;
+      left: 50%;
+      transform: translateX(-50%);
+      font-size: 12px;
+      color: var(--ink-faint);
+      letter-spacing: 0.04em;
+    }
+
+    .terminal__body {
+      padding: 36px 32px 40px;
+    }
+
+    .prompt {
+      color: var(--ink-dim);
+      margin-bottom: 12px;
+    }
+    .prompt .cmd { color: var(--ink); }
+    .prompt .squiggle { color: var(--accent); }
+    .prompt .dollar { color: var(--green); }
+
+    .ascii {
+      font-size: 13px;
+      line-height: 1.15;
+      color: var(--accent);
+      white-space: pre;
+      margin: 24px 0 18px;
+      letter-spacing: 0;
+    }
+
+    .product {
+      display: flex;
+      align-items: baseline;
+      gap: 12px;
+      margin-bottom: 6px;
+      flex-wrap: wrap;
+    }
+    .product__name { font-size: 18px; font-weight: 700; color: var(--ink); }
+    .product__version { font-size: 13px; color: var(--ink-faint); }
+
+    .tagline {
+      color: var(--ink-dim);
+      max-width: 60ch;
+      margin-bottom: 28px;
+    }
+    .tagline .accent { color: var(--accent-warm); }
+
+    .checklist {
+      list-style: none;
+      padding: 0;
+      margin: 0 0 28px;
+    }
+    .checklist li {
+      color: var(--ink);
+      display: flex;
+      align-items: baseline;
+      gap: 12px;
+      padding: 3px 0;
+    }
+    .checklist .ok { color: var(--green); }
+    .checklist .pending { color: var(--ink-faint); }
+
+    .done {
+      color: var(--green);
+      margin: 28px 0 8px;
+    }
+    .done b { color: var(--ink); }
+    .done .cmd { color: var(--accent); }
+
+    .cursor {
+      display: inline-block;
+      width: 9px;
+      height: 17px;
+      background: var(--ink);
+      vertical-align: -3px;
+      margin-left: 4px;
+      animation: blink 1.1s step-end infinite;
+    }
+    @keyframes blink { 50% { opacity: 0; } }
+
+    /* sections below terminal */
+    .section {
+      margin-top: 64px;
+    }
+    .section__label {
+      font-size: 11px;
+      letter-spacing: 0.18em;
+      color: var(--ink-faint);
+      text-transform: uppercase;
+      margin-bottom: 14px;
+    }
+    .section__title {
+      font-family: 'Instrument Serif', serif;
+      font-size: 34px;
+      line-height: 1.15;
+      color: var(--ink);
+      margin-bottom: 18px;
+      letter-spacing: -0.01em;
+    }
+    .section__body {
+      color: var(--ink-dim);
+      max-width: 64ch;
+    }
+    .section__body p + p { margin-top: 14px; }
+
+    /* steps grid */
+    .steps {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 1px;
+      background: var(--panel-edge);
+      border: 1px solid var(--panel-edge);
+      border-radius: 12px;
+      overflow: hidden;
+      margin-top: 24px;
+    }
+    .step {
+      background: var(--panel);
+      padding: 22px 22px 24px;
+    }
+    .step__num {
+      font-size: 11px;
+      letter-spacing: 0.2em;
+      color: var(--accent-warm);
+      margin-bottom: 8px;
+    }
+    .step__title {
+      color: var(--ink);
+      font-weight: 700;
+      margin-bottom: 6px;
+      letter-spacing: 0.02em;
+    }
+    .step__desc {
+      color: var(--ink-dim);
+      font-size: 13.5px;
+      line-height: 1.55;
+    }
+    @media (max-width: 640px) {
+      .steps { grid-template-columns: 1fr; }
+    }
+
+    /* install block */
+    .codeblock {
+      background: #0a0c0f;
+      border: 1px solid var(--panel-edge);
+      border-radius: 10px;
+      padding: 18px 20px;
+      font-size: 13.5px;
+      color: var(--ink);
+      overflow-x: auto;
+      white-space: pre;
+      margin-top: 18px;
+    }
+    .codeblock .comment { color: var(--ink-faint); }
+    .codeblock .green { color: var(--green); }
+
+    /* meta cards */
+    .meta {
+      display: flex;
+      gap: 16px;
+      flex-wrap: wrap;
+      margin-top: 26px;
+    }
+    .meta__card {
+      background: var(--panel);
+      border: 1px solid var(--panel-edge);
+      border-radius: 10px;
+      padding: 14px 18px;
+      flex: 1 1 180px;
+    }
+    .meta__label {
+      font-size: 10.5px;
+      letter-spacing: 0.18em;
+      color: var(--ink-faint);
+      text-transform: uppercase;
+      margin-bottom: 4px;
+    }
+    .meta__value { color: var(--ink); }
+
+    /* CTA */
+    .cta {
+      display: flex;
+      gap: 12px;
+      margin-top: 28px;
+      flex-wrap: wrap;
+    }
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 12px 20px;
+      border-radius: 8px;
+      text-decoration: none;
+      font-weight: 500;
+      font-size: 14px;
+      letter-spacing: 0.01em;
+      transition: transform 0.15s ease, background 0.15s ease;
+    }
+    .btn:hover { transform: translateY(-1px); }
+    .btn--primary { background: var(--accent); color: #0a0c0f; }
+    .btn--primary:hover { background: #b8d2ff; }
+    .btn--ghost {
+      background: transparent;
+      color: var(--ink);
+      border: 1px solid var(--panel-edge);
+    }
+    .btn--ghost:hover { background: var(--panel); }
+
+    /* footer */
+    footer {
+      margin-top: 80px;
+      padding-top: 28px;
+      border-top: 1px solid var(--line);
+      color: var(--ink-faint);
+      font-size: 13px;
+      display: flex;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+    footer a { color: var(--ink-dim); text-decoration: none; }
+    footer a:hover { color: var(--ink); }
+
+    a { color: var(--accent); }
+
+    /* responsive ascii */
+    @media (max-width: 520px) {
+      .ascii { font-size: 9px; }
+      .terminal__body { padding: 24px 18px 28px; }
+      .container { padding: 40px 14px 80px; }
+      .section__title { font-size: 26px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+
+    <!-- Terminal hero -->
+    <div class="terminal">
+      <div class="terminal__chrome">
+        <span class="dot red"></span>
+        <span class="dot yellow"></span>
+        <span class="dot green"></span>
+        <span class="terminal__title">~/.claude/skills/claude-code-optimizer</span>
+      </div>
+      <div class="terminal__body">
+
+        <div class="prompt">
+          <span class="squiggle">~</span> <span class="dollar">$</span> <span class="cmd">claude /claude-code-optimizer</span>
+        </div>
+
+<pre class="ascii">
+   ▄████▄   ▄████▄   ▄▄▄▄    ▄▄▄
+  ▒██▀ ▀█  ▒██▀ ▀█  ▓█████▄ ▒████▄
+  ▒▓█    ▄ ▒▓█    ▄ ▒██▒ ▄██▒██  ▀█▄
+  ▒▓▓▄ ▄██▒▒▓▓▄ ▄██▒▒██░█▀  ░██▄▄▄▄██
+  ▒ ▓███▀ ░▒ ▓███▀ ░░▓█  ▀█▓ ▓█   ▓██▒
+  ░ ░▒ ▒  ░░ ░▒ ▒  ░░▒▓███▀▒ ▒▒   ▓▒█░
+    ░  ▒     ░  ▒   ▒░▒   ░   ▒   ▒▒ ░
+  ░        ░         ░    ░   ░   ▒
+  ░ ░      ░ ░       ░            ░  ░
+</pre>
+
+        <div class="product">
+          <span class="product__name">claude-code-optimizer</span>
+          <span class="product__version">v0.1 · codename stackshift</span>
+        </div>
+        <p class="tagline">
+          A Claude Code skill that audits your AI dev stack, finds new plugins / skills / MCP servers, asks before installing, and prints a <span class="accent">dated PDF report</span> to your Desktop.
+        </p>
+
+        <ul class="checklist">
+          <li><span class="ok">✓</span> Audited 14 plugins, 3 MCP servers</li>
+          <li><span class="ok">✓</span> Researched marketplace + awesome-lists</li>
+          <li><span class="ok">✓</span> Built comparison table</li>
+          <li><span class="pending">→</span> Awaiting your approval to install</li>
+        </ul>
+
+        <div class="done">
+          <b>Done!</b> Report saved to <span class="cmd">~/Desktop/claude-code-update-2026-04-17.pdf</span>
+        </div>
+
+        <div class="prompt">
+          <span class="squiggle">~</span> <span class="dollar">$</span><span class="cursor"></span>
+        </div>
+      </div>
+    </div>
+
+    <!-- CTA -->
+    <div class="cta">
+      <a class="btn btn--primary" href="https://github.com/ronchestermusic/claude-code-optimizer">★ &nbsp;Star on GitHub</a>
+      <a class="btn btn--ghost" href="#install">Install instructions</a>
+    </div>
+
+    <!-- What it does -->
+    <section class="section">
+      <div class="section__label">// WORKFLOW</div>
+      <h2 class="section__title">Six steps. One skill. Zero surprise installs.</h2>
+      <div class="section__body">
+        <p>Stop manually checking marketplaces every week. Stop forgetting which MCP server you tried in February. The optimizer runs the whole loop and ends with a versioned PDF you can scroll back through later.</p>
+      </div>
+
+      <div class="steps">
+        <div class="step">
+          <div class="step__num">STEP 01</div>
+          <div class="step__title">Audit</div>
+          <div class="step__desc">Scans your installed plugins, skills, and MCP servers.</div>
+        </div>
+        <div class="step">
+          <div class="step__num">STEP 02</div>
+          <div class="step__title">Research</div>
+          <div class="step__desc">Crawls the official marketplace, awesome-lists, and pulsemcp.com for what's new.</div>
+        </div>
+        <div class="step">
+          <div class="step__num">STEP 03</div>
+          <div class="step__title">Compare</div>
+          <div class="step__desc">Flags overlap with what you have. Calls out tools that are clearly upgrades.</div>
+        </div>
+        <div class="step">
+          <div class="step__num">STEP 04</div>
+          <div class="step__title">Ask</div>
+          <div class="step__desc">Presents a recommendation table. Nothing installs without explicit approval.</div>
+        </div>
+        <div class="step">
+          <div class="step__num">STEP 05</div>
+          <div class="step__title">Install</div>
+          <div class="step__desc">Runs the right <code style="color:var(--accent-warm)">claude</code> CLI commands for each approved tool.</div>
+        </div>
+        <div class="step">
+          <div class="step__num">STEP 06</div>
+          <div class="step__title">Report</div>
+          <div class="step__desc">Generates a warm-cream editorial PDF. Dated. Saved to your Desktop.</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Install -->
+    <section class="section" id="install">
+      <div class="section__label">// INSTALL</div>
+      <h2 class="section__title">Drop one file. Run one command.</h2>
+
+<pre class="codeblock"><span class="comment"># 1. Drop the skill into your Claude Code skills directory</span>
+<span class="green">mkdir</span> -p ~/.claude/skills/claude-code-optimizer
+<span class="green">curl</span> -o ~/.claude/skills/claude-code-optimizer/SKILL.md \
+  https://raw.githubusercontent.com/ronchestermusic/claude-code-optimizer/main/SKILL.md
+
+<span class="comment"># 2. In any Claude Code session, type:</span>
+/claude-code-optimizer
+
+<span class="comment"># Or just say "optimize my Claude Code setup"</span></pre>
+
+      <div class="meta">
+        <div class="meta__card">
+          <div class="meta__label">Requires</div>
+          <div class="meta__value">Claude Code · macOS · Chrome</div>
+        </div>
+        <div class="meta__card">
+          <div class="meta__label">License</div>
+          <div class="meta__value">MIT</div>
+        </div>
+        <div class="meta__card">
+          <div class="meta__label">Cadence</div>
+          <div class="meta__value">Run monthly</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Why -->
+    <section class="section">
+      <div class="section__label">// WHY</div>
+      <h2 class="section__title">Built because tracking AI tools is a part-time job nobody asked for.</h2>
+      <div class="section__body">
+        <p>I'm a studio owner in Toronto who spends too much time in Claude Code. New plugins ship weekly. New MCP servers ship weekly. Nobody has time to track all of it.</p>
+        <p>So I built a skill that does the tracking for me, on a schedule I control, with <strong style="color:var(--ink)">receipts</strong> (the PDF) so I remember what I added and why.</p>
+      </div>
+    </section>
+
+    <footer>
+      <div>Built by <a href="https://github.com/ronchestermusic">Ron Chester</a> · Toronto · MIT</div>
+      <div><a href="https://github.com/ronchestermusic/claude-code-optimizer">github.com/ronchestermusic/claude-code-optimizer</a></div>
+    </footer>
+
+  </div>
+</body>
+</html>

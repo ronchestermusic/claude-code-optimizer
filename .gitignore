@@ -1,4 +1,6 @@
 .DS_Store
-*.pdf
-*.html
 .claude/
+
+# Generated PDF/HTML reports (Desktop output, not repo content)
+/claude-code-update-*.pdf
+/claude-code-update-*.html
